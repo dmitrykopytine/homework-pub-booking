@@ -195,7 +195,7 @@ async def run_scenario(real: bool) -> int:
     # populate _TOOL_CALL_LOG before the real scenario runs.
     clear_log()
 
-    with example_sessions_dir("ex5-edinburgh-research", persist=real) as sessions_root:
+    with example_sessions_dir("ex5-edinburgh-research", persist=True) as sessions_root:
         session = create_session(
             scenario="edinburgh-research",
             task=(
@@ -292,10 +292,9 @@ async def run_scenario(real: bool) -> int:
             print(f"   Unverified facts: {integrity.unverified_facts}")
             return 2
 
-        if real:
-            print(f"\nArtifacts persist at: {session.directory}")
-            print(f'Inspect with: ls -R "{session.directory}"')
-            print(f"📜 Narrate this run: make narrate SESSION={session.session_id}")
+        print(f"\nArtifacts persist at: {session.directory}")
+        print(f'Inspect with: ls -R "{session.directory}"')
+        print(f"📜 Narrate this run: make narrate SESSION={session.session_id}")
 
         return 0
 
