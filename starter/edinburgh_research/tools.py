@@ -176,10 +176,7 @@ def get_weather(city: str, date: str) -> ToolResult:
     return ToolResult(
         success=True,
         output=output,
-        summary=(
-            f"get_weather({city}, {date}): "
-            f"{output['condition']}, {output['temperature_c']}C"
-        ),
+        summary=(f"get_weather({city}, {date}): {output['condition']}, {output['temperature_c']}C"),
     )
 
 
@@ -285,10 +282,7 @@ def calculate_cost(
     return ToolResult(
         success=True,
         output=output,
-        summary=(
-            f"calculate_cost({venue_id}, {party_size}): "
-            f"total £{total}, deposit £{deposit}"
-        ),
+        summary=(f"calculate_cost({venue_id}, {party_size}): total £{total}, deposit £{deposit}"),
     )
 
 
