@@ -2,25 +2,25 @@
 
 ## Your answer
 
-The planner produced two subgoals: sg_1 (research venues near Haymarket
-for a party of 6, assigned to loop) and sg_2 (produce a flyer with the
-chosen venue, weather, and cost, also loop). Both ran in the same
-executor session.
+Implemented 4 required tool calls: `venue_search`, `get_weather`,
+`calculate_cost`, `generate_flyer`.
 
-Turn 1 called venue_search, get_weather, and calculate_cost in parallel
-— all three are parallel_safe because they only read fixtures. Turn 2
-wrote the flyer via generate_flyer (parallel_safe=False because it
-writes a file). Turn 3 called complete_task.
+Offline run `make ex5` completed session **sess_7c04c8ef85c4**
+(FakeLLMClient). The planner issued two subgoals (`sg_1` research,
+`sg_2` flyer). Final answer: "Booking researched; flyer at
+workspace/flyer.html".
 
-The dataflow integrity check caught one issue during development: the
-template for "no deposit required" originally read "total under £300
-threshold", which put £300 in the flyer prose. That value was never
-returned by any tool — it's a rule threshold, not data. I simplified
-the phrasing to "No deposit required for this booking." Without the
-integrity check this would have slipped past review because £300 looks
-like a reasonable number in the right context.
+**Trace tool order**: `venue_search` → `get_weather` → `calculate_cost`
+→ `generate_flyer` → `complete_task`.
+
+**Fabrication test**: I edited `workspace/flyer.html` in the latest
+session (changed the total from £540 to £9999) and re-ran
+`verify_dataflow` on the file directly. The check failed as expected -
+`dataflow FAIL: 4 unverified fact(s): ['£9999', '£0', '12',
+'cloudy']`.
 
 ## Citations
 
-- sessions/sess_*/logs/trace.jsonl — tool call sequence
-- sessions/sess_*/workspace/flyer.md — the produced flyer
+- `file:///Users/dm9/Library/Application%20Support/sovereign-agent/examples/ex5-edinburgh-research/sess_7c04c8ef85c4/logs/trace.jsonl` - tool call order
+- `file:///Users/dm9/Library/Application%20Support/sovereign-agent/examples/ex5-edinburgh-research/sess_7c04c8ef85c4/workspace/flyer.html` - Haymarket Tap flyer
+- starter/edinburgh_research/tools.py - Tools
