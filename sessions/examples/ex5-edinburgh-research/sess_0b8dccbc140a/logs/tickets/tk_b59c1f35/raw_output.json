@@ -1,0 +1,67 @@
+{
+  "subgoal_id": "sg_1",
+  "success": true,
+  "final_answer": "(handoff requested)",
+  "tool_calls_made": [
+    {
+      "name": "venue_search",
+      "arguments": {
+        "near": "Edinburgh",
+        "party_size": 4
+      },
+      "success": true,
+      "summary": "venue_search(Edinburgh, party=4): 0 result(s)",
+      "requires_human_approval": false
+    },
+    {
+      "name": "venue_search",
+      "arguments": {
+        "near": "Edinburgh City Center",
+        "party_size": 10
+      },
+      "success": true,
+      "summary": "venue_search(Edinburgh City Center, party=10): 0 result(s)",
+      "requires_human_approval": false
+    },
+    {
+      "name": "handoff_to_structured",
+      "arguments": {
+        "reason": "Venue search returning zero results despite valid parameters; need structured approach to refine criteria",
+        "context": "Tried Edinburgh and Edinburgh City Center with party sizes 4 and 10",
+        "data": {
+          "attempts": [
+            {
+              "location": "Edinburgh",
+              "party_size": 4
+            },
+            {
+              "location": "Edinburgh City Center",
+              "party_size": 10
+            }
+          ]
+        }
+      },
+      "success": true,
+      "summary": "handoff to structured half: Venue search returning zero results despite valid parameters; need structured approach to refine criteria",
+      "requires_human_approval": false
+    }
+  ],
+  "turns_used": 3,
+  "handoff_requested": true,
+  "handoff_payload": {
+    "reason": "Venue search returning zero results despite valid parameters; need structured approach to refine criteria",
+    "context": "Tried Edinburgh and Edinburgh City Center with party sizes 4 and 10",
+    "data": {
+      "attempts": [
+        {
+          "location": "Edinburgh",
+          "party_size": 4
+        },
+        {
+          "location": "Edinburgh City Center",
+          "party_size": 10
+        }
+      ]
+    }
+  }
+}

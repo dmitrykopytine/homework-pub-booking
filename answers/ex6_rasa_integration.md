@@ -8,7 +8,7 @@ Implemented the structured half:
 - Completed `RasaStructuredHalf.run()` in `starter/rasa_half/structured_half.py`
 - Completed `normalise_booking_payload` in `starter/rasa_half/validator.py`
 
-`make ex6-real` completed session **sess_1a6eee41508c** against live Rasa. 
+`make ex6-real` completed session **sess_9ef835e9959c** against live Rasa. 
 Structured half outcome: complete - booking confirmed by rasa (ref=**BK-7D401E9E**).
 
 ## Citations

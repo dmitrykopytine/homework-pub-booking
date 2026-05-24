@@ -5,7 +5,7 @@
 Implemented 4 required tool calls: `venue_search`, `get_weather`,
 `calculate_cost`, `generate_flyer`.
 
-Offline run `make ex5` completed session **sess_7c04c8ef85c4**
+Offline run `make ex5` completed session **sess_08a7ead53e4b**
 (FakeLLMClient). The planner issued two subgoals (`sg_1` research,
 `sg_2` flyer). Final answer: "Booking researched; flyer at
 workspace/flyer.html".
@@ -21,6 +21,6 @@ session (changed the total from £540 to £9999) and re-ran
 
 ## Citations
 
-- `file:///Users/dm9/Library/Application%20Support/sovereign-agent/examples/ex5-edinburgh-research/sess_7c04c8ef85c4/logs/trace.jsonl` - tool call order
-- `file:///Users/dm9/Library/Application%20Support/sovereign-agent/examples/ex5-edinburgh-research/sess_7c04c8ef85c4/workspace/flyer.html` - Haymarket Tap flyer
+- `sessions/examples/ex5-edinburgh-research/sess_08a7ead53e4b/logs/trace.jsonl` - tool call order
+- `sessions/examples/ex5-edinburgh-research/sess_08a7ead53e4b/workspace/flyer.html` - Haymarket Tap flyer
 - starter/edinburgh_research/tools.py - Tools

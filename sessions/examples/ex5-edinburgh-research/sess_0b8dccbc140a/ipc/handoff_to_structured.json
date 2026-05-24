@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "from_half": "loop",
+  "to_half": "structured",
+  "written_at": "2026-05-24T22:40:29.073914+00:00",
+  "session_id": "sess_0b8dccbc140a",
+  "reason": "Venue search returning zero results despite valid parameters; need structured approach to refine criteria",
+  "context": "Tried Edinburgh and Edinburgh City Center with party sizes 4 and 10",
+  "data": {
+    "attempts": [
+      {
+        "location": "Edinburgh",
+        "party_size": 4
+      },
+      {
+        "location": "Edinburgh City Center",
+        "party_size": 10
+      }
+    ]
+  },
+  "return_instructions": ""
+}
