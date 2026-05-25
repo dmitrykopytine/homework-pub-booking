@@ -56,26 +56,43 @@ text.
 
 ### Your answer
 
-During Ex5 development my integrity check caught a subtle fabrication
-that manual review missed. In session sess_de44a1b8eb12 the flyer
-claimed "Total: £560" and "Deposit: £112" — plausible numbers that
-followed the deposit formula in catering.json. I skimmed and moved on.
+I never saw `verify_dataflow` fail during a live `make ex5` run. Session
+`sess_08a7ead53e4b` completed cleanly: the flyer reads as a coherent
+Haymarket Tap booking (cloudy, 12°C, £540 total, no deposit), and a human
+skimming `workspace/flyer.html` would likely approve it.
 
-verify_dataflow returned ok=False with unverified_facts=['£560','£112'].
-The trace showed calculate_cost returned total_gbp=540, deposit=0. The
-real total was £540 under the £300 deposit threshold. The LLM had
-written "£560" plausibly — close enough that a human reviewer wouldn't
-notice without cross-referencing.
+**Plausible catch a human would miss.** After that same run, I took
+`workspace/flyer.html` and changed one number in the total —
+`<dd data-testid="total">£540</dd>` → `£9999`. I re-ran
+`verify_dataflow` with `_TOOL_CALL_LOG` still populated from the
+scenario. A reviewer who checks venue name, weather tone, and "does the
+HTML look fine?" may never cross-check every `£` against `trace.jsonl`.
+Meanwhile, the check failed: `extract_money_facts` pulls `£9999`,
+`fact_appears_in_log` scans all logged tool `output` and `arguments`, and
+`9999` appears nowhere (`calculate_cost` logged `total_gbp: 556` in trace
+line 5, not 9999).
 
-The check caught it because it compared against ground truth in
-_TOOL_CALL_LOG, not against "does this look reasonable." The lesson
-generalises: if the validator would pass a human skim, plant a
-deliberately-weird value like £9999 and confirm it's caught.
+**What the check does not catch (and my run shows why).** In
+`sess_08a7ead53e4b`, `calculate_cost` returned **£556 / deposit £111**
+(`trace.jsonl` line 5), but the scripted `generate_flyer` call passed
+`total_gbp: 540, deposit_required_gbp: 0` (line 6), and the flyer matches
+those wrong inputs. `verify_dataflow` mistakenly passes because
+`fact_appears_in_log` treats **`generate_flyer` arguments as valid
+sources** (not just upstream tool outputs) — so invented or, in this
+case, manually written test numbers (`starter/edinburgh_research/run.py:91`)
+copied into `event_details` are self-verifying. Excluding `generate_flyer`
+from the log scan (or requiring cost facts to trace only to
+`calculate_cost` output) would close that gap with minimal change. The
+£9999 plant catches *post-hoc HTML tampering*; it does not catch *LLM
+mis-wiring between tools* unless the wrong value never appears anywhere
+in the log.
 
 ### Citation
 
-- sessions/sess_de44a1b8eb12/workspace/flyer.md:12
-- sessions/sess_de44a1b8eb12/logs/trace.jsonl:15
+- `sessions/examples/ex5-edinburgh-research/sess_08a7ead53e4b/logs/trace.jsonl` — line 5 (`£556` / `£111`) vs line 6 (`540` / `0` in `generate_flyer` args)
+- `sessions/examples/ex5-edinburgh-research/sess_08a7ead53e4b/workspace/flyer.html` — rendered `£540` / `£0`
+- `starter/edinburgh_research/integrity.py` — `verify_dataflow`, `fact_appears_in_log` (scans all tool `output` + `arguments`)
+- `starter/edinburgh_research/tools.py` — `generate_flyer` logs `event_details` in arguments, not HTML body
 
 ---
 
