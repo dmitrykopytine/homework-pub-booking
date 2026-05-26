@@ -4,9 +4,10 @@
 
 ### Your answer
 
-In session `sess_f02826dbf06b` (`make ex7-real`), the planner never
-assigned a subgoal to the structured half. Both planner tickets show
-`assigned_half: "loop"`.
+The honest answer is: **the planner never made that decision**. In
+session `sess_f02826dbf06b` (`make ex7-real`), both planner tickets show
+`"assigned_half": "loop"`. The signal that routed work to Rasa was a
+hard-coded executor tool call, not a planner subgoal.
 
 Round 1 (`tk_e6bc4eea/raw_output.json`): subgoal `sg_1` is
 `"find venue near haymarket for 12"` with `"assigned_half": "loop"`.
@@ -93,6 +94,7 @@ in the log.
 - `sessions/examples/ex5-edinburgh-research/sess_08a7ead53e4b/workspace/flyer.html` — rendered `£540` / `£0`
 - `starter/edinburgh_research/integrity.py` — `verify_dataflow`, `fact_appears_in_log` (scans all tool `output` + `arguments`)
 - `starter/edinburgh_research/tools.py` — `generate_flyer` logs `event_details` in arguments, not HTML body
+- `README.md` "The fabrication test" (lines 139–156) — documents the £540 -> £9999 manual procedure I followed
 
 ---
 
@@ -100,13 +102,16 @@ in the log.
 
 ### Your answer
 
-The first production failure I'd expect is a **false-green executor
-ticket while the booking never completes**. In my `make ex5-real` run,
-session `sess_0b8dccbc140a`, the live executor (Qwen3-32B) ended with
-`Loop half outcome: handoff_to_structured` — not `complete`. Both
-tickets show **success** (`tk_629488b6` planner, `tk_b59c1f35`
-executor), yet `make ex5-real` exited with "No flyer written to
-workspace/." and `generate_flyer` was never called.
+The first production failure I'd expect is the **ticket state machine**
+falsely reporting success: it closes a subgoal as `success` when its
+last tool call (`handoff_to_structured`) succeeds, regardless of whether
+the subgoal's actual goal — a written flyer — was achieved. In my
+`make ex5-real` run, session `sess_0b8dccbc140a`, the
+live executor (Qwen3-32B) ended with `Loop half outcome:
+handoff_to_structured` — not `complete`. Both tickets show **success**
+(`tk_629488b6` planner, `tk_b59c1f35` executor), yet `make ex5-real`
+exited with "No flyer written to workspace/." and `generate_flyer` was
+never called.
 
 The trace explains why: the LLM ignored the required Haymarket search
 and called `venue_search` twice with wrong parameters — `Edinburgh`,
