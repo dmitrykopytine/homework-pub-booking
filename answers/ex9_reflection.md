@@ -96,24 +96,42 @@ in the log.
 
 ---
 
-## Q3 — Removing one framework primitive
+## Q3 — First production failure
 
 ### Your answer
 
-I'd keep session directories (Decision 1) as the last thing standing
-and rebuild everything else if forced. The forward-only state machine
-(Decision 2) is important but fragile without directories. Tickets
-(Decision 3) I could rebuild as .jsonl files inside the session.
-Atomic-rename IPC (Decision 5) is replaceable by directory polling.
+The first production failure I'd expect is a **false-green executor
+ticket while the booking never completes**. In my `make ex5-real` run,
+session `sess_0b8dccbc140a`, the live executor (Qwen3-32B) ended with
+`Loop half outcome: handoff_to_structured` — not `complete`. Both
+tickets show **success** (`tk_629488b6` planner, `tk_b59c1f35`
+executor), yet `make ex5-real` exited with "No flyer written to
+workspace/." and `generate_flyer` was never called.
 
-Session directories are the irreplaceable piece. Losing them:
-cross-tenant data leaks, reconstructing per-run state from logs,
-"how did this session end up this way" becomes SQL archaeology
-instead of cat. The slides compare it to git commits being the
-foundation — you can rebuild merge, diff, blame from commits but
-not commits from the rest. Session directories are commits.
+The trace explains why: the LLM ignored the required Haymarket search
+and called `venue_search` twice with wrong parameters — `Edinburgh`,
+party 4, then `Edinburgh City Center`, party 10 (`trace.jsonl` lines
+3–4, both `0 result(s)`). It then invoked `handoff_to_structured`
+(line 5). Ex5 is loop-only — no `HandoffBridge` — so
+`ipc/handoff_to_structured.json` was written but never consumed.
+`session.json` still shows **`state: "executing"`** and **`result:
+null`**; `run.py` returned exit 1 but never called
+`session.mark_failed()`.
+
+The **ticket state machine** surfaces this: executor ticket
+`tk_b59c1f35` closes as **`success`** with manifest
+`handoff_requested: true` and summary "Handoff to structured half
+requested" — because from the executor's view, subgoal `sg_1` finished
+normally (the handoff tool returned `success: true`). That contradicts
+the actual outcome: no `generate_flyer`, no `workspace/flyer.html`, and
+`session.json` still `executing` with `result: null`. The ticket record
+says the executor did its job; the booking was never produced.
 
 ### Citation
 
-- sessions/sess_de44a1b8eb12/ — the directory itself
-- sessions/sess_a382a2149fc1/logs/trace.jsonl
+- `sessions/examples/ex5-edinburgh-research/sess_0b8dccbc140a/logs/trace.jsonl` — lines 3–5 (failed searches, handoff)
+- `sessions/examples/ex5-edinburgh-research/sess_0b8dccbc140a/logs/tickets/tk_b59c1f35/manifest.json` — ticket `success`, `handoff_requested: true`
+- `sessions/examples/ex5-edinburgh-research/sess_0b8dccbc140a/logs/tickets/tk_b59c1f35/summary.md` — "Handoff to structured half requested"
+- `sessions/examples/ex5-edinburgh-research/sess_0b8dccbc140a/session.json` — still `executing`, `result: null`
+- `sessions/examples/ex5-edinburgh-research/sess_0b8dccbc140a/ipc/handoff_to_structured.json` — orphan handoff, no consumer
+- `starter/edinburgh_research/run.py` — detects missing flyer (exit 1) but does not update session state
